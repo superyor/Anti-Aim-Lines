@@ -9,6 +9,7 @@ local enabled = gui.Checkbox(pos, "suyu_antiaimlines_enabled", "Anti-Aim Lines",
 --- Variables
 local rx, ry;
 local fx, fy;
+local fx2, fy2;
 local lby;
 local pLocal = entities.GetLocalPlayer();
 local choking;
@@ -51,9 +52,12 @@ local function iHateMyself(value, color, text)
     local w2sX1, w2sY1 = client.WorldToScreen(originX, originY, originZ);
     local w2sX2, w2sY2 = client.WorldToScreen(end3D[1], end3D[2], end3D[3]);
     draw.Color(color[1], color[2], color[3], color[4])
-    draw.Line(w2sX1, w2sY1, w2sX2, w2sY2)
-    local textW, textH = draw.GetTextSize(text);
-    draw.TextShadow( w2sX2-(textW/2), w2sY2-(textH/2), text)
+
+    if w2sX1 and w2sY1 and w2sX2 and w2sY2 then
+        draw.Line(w2sX1, w2sY1, w2sX2, w2sY2)
+        local textW, textH = draw.GetTextSize(text);
+        draw.TextShadow( w2sX2-(textW/2), w2sY2-(textH/2), text)
+    end
 end
 
 --- Callbacks
@@ -62,6 +66,8 @@ end
 callbacks.Register("Draw", function()
 
     pLocal = entities.GetLocalPlayer();
+    lby = pLocal:GetProp("m_flLowerBodyYawTarget");
+    fx, fy = pLocal:GetProp("m_angEyeAngles");
 
     if lastChoke and lastChoke <= globals.CurTime() - 1 then
         choking = false;
@@ -71,6 +77,7 @@ callbacks.Register("Draw", function()
 
         if ry and choking then iHateMyself(ry, {25, 255, 25, 255}, "Last Choked") end
         if fy then iHateMyself(fy, {255, 25, 25, 255}, "Networked") end
+        if fy2 then iHateMyself(fy2, {25, 25, 255, 255}, "Local Angle") end
         if lby then iHateMyself(lby, {255, 255, 255, 255}, "Networked LBY") end
     end
 end)
@@ -83,9 +90,8 @@ callbacks.Register("CreateMove", function(pCmd)
             rx, ry = pCmd:GetViewAngles();
             choking = true;
             lastChoke = globals.CurTime();
+        else
+            fx2, fy2 = pCmd:GetViewAngles()
         end
-
-        lby = pLocal:GetProp("m_flLowerBodyYawTarget");
-        fx, fy = pLocal:GetProp("m_angEyeAngles");
     end
 end)
