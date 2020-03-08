@@ -2,22 +2,24 @@
 --- Creator: Superyu'#7167
 ---
 
---- GUI Stuff
-local pos = gui.Reference("RAGE", "MAIN", "Anti-Aim Main");
-local enabled = gui.Checkbox(pos, "suyu_antiaimlines_enabled", "Anti-Aim Lines", 0);
+--- GUI shit
+local POS = gui.Reference("Visuals", "Local", "Helper")
+local MULTI = gui.Multibox(POS, "Antiaim lines")
+local NETWORKED = gui.Checkbox(MULTI, "vis.local.aalines.networked", "Networked Angle", false)
+local LBY = gui.Checkbox(MULTI, "vis.local.aalines.lby", "LBY", false)
+local LOCALANG = gui.Checkbox(MULTI, "vis.local.aalines.networked", "Local Angle", false)
+local LASTCHOKEDANG = gui.Checkbox(MULTI, "vis.local.aalines.lby", "Last Choked", false)
 
 --- Variables
-local rx, ry;
-local fx, fy;
-local fx2, fy2;
-local lby;
+local lastChoked = nil;
+local fake = nil;
+local localAngle = nil;
+local lby = nil;
 local pLocal = entities.GetLocalPlayer();
 local choking;
 local lastChoke;
 
---- Functions
-
--- Angle to vector function
+--- The maths
 local function AngleVectors(angles)
 
     local sp, sy, cp, cy;
@@ -46,11 +48,11 @@ end
 local function iHateMyself(value, color, text)
 
     local forward = {};
-    local originX, originY, originZ = pLocal:GetAbsOrigin();
+    local origin = pLocal:GetAbsOrigin();
     forward = AngleVectors({0, value, 0});
-    local end3D = doShit({ originX, originY, originZ }, forward, 25);
-    local w2sX1, w2sY1 = client.WorldToScreen(originX, originY, originZ);
-    local w2sX2, w2sY2 = client.WorldToScreen(end3D[1], end3D[2], end3D[3]);
+    local end3D = doShit({origin.x, origin.y, origin.z}, forward, 25);
+    local w2sX1, w2sY1 = client.WorldToScreen(origin);
+    local w2sX2, w2sY2 = client.WorldToScreen(Vector3(end3D[1], end3D[2], end3D[3]));
     draw.Color(color[1], color[2], color[3], color[4])
 
     if w2sX1 and w2sY1 and w2sX2 and w2sY2 then
@@ -61,37 +63,33 @@ local function iHateMyself(value, color, text)
 end
 
 --- Callbacks
-
--- Draw lines
 callbacks.Register("Draw", function()
 
     pLocal = entities.GetLocalPlayer();
     lby = pLocal:GetProp("m_flLowerBodyYawTarget");
-    fx, fy = pLocal:GetProp("m_angEyeAngles");
+    fake = pLocal:GetProp("m_angEyeAngles");
 
     if lastChoke and lastChoke <= globals.CurTime() - 1 then
         choking = false;
     end
 
-    if pLocal and pLocal:IsAlive() and enabled:GetValue()  then
-
-        if ry and choking then iHateMyself(ry, {25, 255, 25, 255}, "Last Choked") end
-        if fy then iHateMyself(fy, {255, 25, 25, 255}, "Networked") end
-        if fy2 then iHateMyself(fy2, {25, 25, 255, 255}, "Local Angle") end
-        if lby then iHateMyself(lby, {255, 255, 255, 255}, "Networked LBY") end
+    if pLocal and pLocal:IsAlive() then
+        if lastChoked and choking and LASTCHOKEDANG:GetValue() then iHateMyself(lastChoked.y, {25, 255, 25, 255}, "Last Choked") end
+        if fake and NETWORKED:GetValue() then iHateMyself(fake.y, {255, 25, 25, 255}, "Networked") end
+        if localAngle and LOCALANG:GetValue() then iHateMyself(localAngle.y, {25, 25, 255, 255}, "Local Angle") end
+        if lby and LBY:GetValue() then iHateMyself(lby, {255, 255, 255, 255}, "LBY") end
     end
 end)
 
--- Get angles
 callbacks.Register("CreateMove", function(pCmd)
-    if pLocal and pLocal:IsAlive() and enabled:GetValue() then
+    if pLocal and pLocal:IsAlive() then
 
-        if not pCmd:GetSendPacket() then
-            rx, ry = pCmd:GetViewAngles();
+        if not pCmd.sendpacket then
+            lastChoked = pCmd.viewangles
             choking = true;
             lastChoke = globals.CurTime();
         else
-            fx2, fy2 = pCmd:GetViewAngles()
+            localAngle = pCmd.viewangles
         end
     end
 end)
