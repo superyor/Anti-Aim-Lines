@@ -7,8 +7,8 @@ local POS = gui.Reference("Visuals", "Local", "Helper")
 local MULTI = gui.Multibox(POS, "Antiaim lines")
 local NETWORKED = gui.Checkbox(MULTI, "vis.local.aalines.networked", "Networked Angle", false)
 local LBY = gui.Checkbox(MULTI, "vis.local.aalines.lby", "LBY", false)
-local LOCALANG = gui.Checkbox(MULTI, "vis.local.aalines.networked", "Local Angle", false)
-local LASTCHOKEDANG = gui.Checkbox(MULTI, "vis.local.aalines.lby", "Last Choked", false)
+local LOCALANG = gui.Checkbox(MULTI, "vis.local.aalines.local", "Local Angle", false)
+local LASTCHOKEDANG = gui.Checkbox(MULTI, "vis.local.aalines.lastchoked", "Last Choked", false)
 
 --- Variables
 local lastChoked = nil;
