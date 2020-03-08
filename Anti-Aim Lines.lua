@@ -2,7 +2,7 @@
 --- Creator: Superyu'#7167
 ---
 
---- GUI shit
+--- GUI stuff
 local POS = gui.Reference("Visuals", "Local", "Helper")
 local MULTI = gui.Multibox(POS, "Antiaim lines")
 local NETWORKED = gui.Checkbox(MULTI, "vis.local.aalines.networked", "Networked Angle", false)
